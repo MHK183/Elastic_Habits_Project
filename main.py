@@ -1,31 +1,77 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout, QLabel, QLineEdit, QTextEdit
+import sys, pickle
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, \
+                            QTableWidget, QTableWidgetItem, QVBoxLayout
 from PyQt5.QtGui import QIcon # 아이콘 넣기
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import Qt
 
 
-# 작은 창 하나 띄우기
 class MyApp(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.row = 5
+        self.col = 18
         self.initUI()
 
     def initUI(self):
-        grid = QGridLayout()
-        self.setLayout(grid)
-
-        grid.addWidget(QLabel('날짜'), 0, 0)
-        grid.addWidget(QLabel('독서하기'), 1, 0)
-        grid.addWidget(QLabel('운동하기'), 2, 0)
-        grid.addWidget(QLabel('글쓰기'), 3, 0)
 
         self.setWindowTitle('Elastic Habits')  # 창의 제목
         self.setWindowIcon(QIcon('icon.png'))  # 아이콘 넣기
         self.setGeometry(300, 300, 1366, 768)  # 창의 위치(앞에 2개)와 크기(뒤에 2개) move + resize 합친 것과 같음
-        # self.move(300, 300)  # 위젯을 스크린의 x=300px, y=300px (아직 모르겠음)
-        # self.resize(400, 200)  # 위젯의 크기
+
+        # 테이블 생성 및 저장 버튼
+        self.createTable()
+        self.btn = QPushButton('저장')
+        self.btn.clicked.connect(on_cl)
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.table)
+        self.layout.addWidget(self.btn)
+
+        self.setLayout(self.layout)
         self.show()
+
+    def createTable(self):
+        self.table = QTableWidget()
+        self.table.setRowCount(self.row)
+        self.table.setColumnCount(self.col)
+
+        # 열 너비 조정
+        for i in range(self.col):
+            self.table.setColumnWidth(i, 1)
+            if i >= 15:
+                self.table.setColumnWidth(i, 80)
+        # 마지막 행 높이 조정
+        self.table.setRowHeight(4, 55)
+        # 열 제목 리스트 저장
+        col_list = [str(i) for i in range(1, 15 + 1)] + ['미니', '플러스', '엘리트']
+        # 열 및 행 제목 생성
+        self.table.setHorizontalHeaderLabels(col_list)
+        self.table.setVerticalHeaderLabels(('독서하기', '운동하기', '글쓰기'))
+
+        try:
+            fp = open("out.txt", "rb")
+            for r in range(self.row):
+                for c in range(self.col):
+                    self.table.setItem(r, c, QTableWidgetItem(str(pickle.load(fp))))
+            fp.close()
+        except:
+            for r in range(self.row):
+                for c in range(self.col):
+                    self.table.setItem(r, c, QTableWidgetItem(""))
+
+        # 특정 칸 값 지정
+        score_titles = ['미니\n총점', '플러스\n총점', '엘리트\n총점']
+        for i in range(3):
+            self.table.setItem(4, i+15, QTableWidgetItem(score_titles[i]))
+
+# 저장 함수
+def on_cl():
+    fp = open("out.txt", "wb")
+    for r in range(ex.row):
+        for c in range(ex.col):
+            pickle.dump(ex.table.item(r, c).text(), fp)
+    fp.close()
 
 
 if __name__ == '__main__':
@@ -33,3 +79,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MyApp()
     sys.exit(app.exec_())
+
+
