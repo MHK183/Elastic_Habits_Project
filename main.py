@@ -1,6 +1,5 @@
 import sys, pickle
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, \
-                            QTableWidget, QTableWidgetItem, QVBoxLayout
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon # 아이콘 넣기
 from PyQt5.QtCore import Qt
 
@@ -21,11 +20,13 @@ class MyApp(QWidget):
 
         # 테이블 생성 및 저장 버튼
         self.createTable()
+        self.createTable2()
         self.btn = QPushButton('저장')
         self.btn.clicked.connect(on_cl)
 
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.table)
+        self.layout.addWidget(self.table2)
         self.layout.addWidget(self.btn)
 
         self.setLayout(self.layout)
@@ -43,11 +44,12 @@ class MyApp(QWidget):
                 self.table.setColumnWidth(i, 80)
         # 마지막 행 높이 조정
         self.table.setRowHeight(4, 55)
-        # 열 제목 리스트 저장
-        col_list = [str(i) for i in range(1, 15 + 1)] + ['미니', '플러스', '엘리트']
+        # 열 및 행 제목 리스트 저장
+        col_headers = [str(i) for i in range(1, 15 + 1)] + ['미니', '플러스', '엘리트']
+        row_indexes = ['독서하기', '운동하기', '글쓰기', '', '']
         # 열 및 행 제목 생성
-        self.table.setHorizontalHeaderLabels(col_list)
-        self.table.setVerticalHeaderLabels(('독서하기', '운동하기', '글쓰기'))
+        self.table.setHorizontalHeaderLabels(col_headers)
+        self.table.setVerticalHeaderLabels(row_indexes)
 
         try:
             fp = open("out.txt", "rb")
@@ -63,7 +65,46 @@ class MyApp(QWidget):
         # 특정 칸 값 지정
         score_titles = ['미니\n총점', '플러스\n총점', '엘리트\n총점']
         for i in range(3):
-            self.table.setItem(4, i+15, QTableWidgetItem(score_titles[i]))
+            item = QTableWidgetItem(score_titles[i])
+            item.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(4, i+15, item)
+
+    def createTable2(self):
+        self.table2 = QTableWidget()
+        self.table2.setRowCount(self.row)
+        self.table2.setColumnCount(self.col)
+
+        # 열 너비 조정
+        for i in range(self.col):
+            self.table2.setColumnWidth(i, 1)
+            if i >= 15:
+                self.table2.setColumnWidth(i, 80)
+        # 마지막 행 높이 조정
+        self.table2.setRowHeight(4, 55)
+        # 열 및 행 제목 리스트 저장
+        col_headers = [str(i) for i in range(16, 30 + 1)] + ['미니', '플러스', '엘리트']
+        row_indexes = ['독서하기', '운동하기', '글쓰기', '', '']
+        # 열 및 행 제목 생성
+        self.table2.setHorizontalHeaderLabels(col_headers)
+        self.table2.setVerticalHeaderLabels(row_indexes)
+
+        try:
+            fp = open("out.txt", "rb")
+            for r in range(self.row):
+                for c in range(self.col):
+                    self.table2.setItem(r, c, QTableWidgetItem(str(pickle.load(fp))))
+            fp.close()
+        except:
+            for r in range(self.row):
+                for c in range(self.col):
+                    self.table2.setItem(r, c, QTableWidgetItem(""))
+
+        # 특정 칸 값 지정
+        score_titles = ['미니\n총점', '플러스\n총점', '엘리트\n총점']
+        for i in range(3):
+            item = QTableWidgetItem(score_titles[i])
+            item.setTextAlignment(Qt.AlignCenter)
+            self.table2.setItem(4, i+15, item)
 
 # 저장 함수
 def on_cl():
